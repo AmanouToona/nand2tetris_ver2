@@ -20,9 +20,4 @@ CHIP PC {
     Mux16(a=inner02, b=false, sel=reset, out=inner03);
     Register(in=inner03, load=true, out=out, out=fb);
 
-
-/*    Mux8Way16(a=fb, b=added, c=in, d=fb, e=false, f=fb, g=fb, h=fb, sel[2]=reset, sel[1]=load, sel[0]=inc, out=inner);
-    Register(in=inner, load=true, out=out, out=fb);
-*/
-
 }
