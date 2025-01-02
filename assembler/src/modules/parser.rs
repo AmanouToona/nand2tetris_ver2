@@ -1,6 +1,7 @@
-use std::{io::BufRead, thread::panicking};
+use std::io::BufRead;
 
-enum InstructionType {
+#[derive(Debug)]
+pub enum InstructionType {
     Acommand,
     Ccommand,
     Lcommand,
@@ -33,15 +34,15 @@ impl Parser {
         Self { code, position: 0 }
     }
 
-    fn has_more_lines(&self) -> bool {
+    pub fn has_more_lines(&self) -> bool {
         self.position < self.code.len()
     }
 
-    fn advance(&mut self) {
+    pub fn advance(&mut self) {
         self.position += 1;
     }
 
-    fn instruction_type(&self) -> Option<InstructionType> {
+    pub fn instruction_type(&self) -> Option<InstructionType> {
         let line = self.code[self.position].as_str();
 
         if line.starts_with('@') {
@@ -55,7 +56,7 @@ impl Parser {
         Some(InstructionType::Ccommand)
     }
 
-    fn symbol(&self) -> Option<&str> {
+    pub fn symbol(&self) -> Option<&str> {
         let res = match self.instruction_type() {
             None => return None,
             Some(InstructionType::Ccommand) => return None,
@@ -78,7 +79,7 @@ impl Parser {
         None
     }
 
-    fn dest(&self) -> Option<&str> {
+    pub fn dest(&self) -> Option<&str> {
         let res = match self.instruction_type() {
             None => return None,
             Some(InstructionType::Ccommand) => &self.code[self.position],
@@ -91,7 +92,7 @@ impl Parser {
         res.split('=').next()
     }
 
-    fn comp(&self) -> Option<&str> {
+    pub fn comp(&self) -> Option<&str> {
         let code = match self.instruction_type() {
             Some(InstructionType::Ccommand) => &self.code[self.position],
             _ => return None,
@@ -107,7 +108,7 @@ impl Parser {
         Some(&code[left..])
     }
 
-    fn jump(&self) -> Option<&str> {
+    pub fn jump(&self) -> Option<&str> {
         let code = match self.instruction_type() {
             Some(InstructionType::Ccommand) => &self.code[self.position],
             _ => return None,
