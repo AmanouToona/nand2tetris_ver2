@@ -121,7 +121,7 @@ impl Parser {
         Some(code)
     }
 
-    fn reset(&mut self) {
+    pub fn reset(&mut self) {
         self.position = 0;
     }
 }

@@ -3,6 +3,7 @@ use std::io::Write;
 use assembler::modules::arg_parser;
 use assembler::modules::code;
 use assembler::modules::parser;
+use assembler::modules::symbol_table::SymbolTable;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -15,6 +16,25 @@ fn main() {
         }
     };
 
+    let mut parser = parser::Parser::new(reader);
+    let mut symbol_table = SymbolTable::new();
+    let mut address_num = 0;
+    while parser.has_more_lines() {
+        match parser.instruction_type() {
+            Some(parser::InstructionType::Lcommand) => {
+                let symbol = match parser.symbol() {
+                    Some(symbol) => symbol,
+                    None => continue,
+                };
+
+                symbol_table.add_entry(symbol.to_string(), address_num);
+            }
+            _ => address_num += 1,
+        }
+        parser.advance();
+    }
+    parser.reset();
+
     let mut writer = match arg_parser::parse_filename_to_output(&args) {
         Ok(writer) => writer,
         Err(e) => {
@@ -22,8 +42,6 @@ fn main() {
             panic!()
         }
     };
-
-    let mut parser = parser::Parser::new(reader);
 
     while parser.has_more_lines() {
         match parser.instruction_type() {
@@ -52,11 +70,15 @@ fn main() {
                     None => panic!("symbol is not found"),
                 };
 
-                let address = match symbol.parse::<i32>() {
-                    Ok(address) => address,
-                    Err(_) => {
-                        eprintln!("Error: invalid address");
-                        panic!()
+                let address: usize = if symbol_table.contains(symbol) {
+                    symbol_table.get_address(symbol)
+                } else {
+                    match symbol.parse::<usize>() {
+                        Ok(address) => address,
+                        Err(_) => {
+                            eprintln!("Error: invalid address");
+                            panic!()
+                        }
                     }
                 };
 
